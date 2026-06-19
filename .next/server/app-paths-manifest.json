@@ -1,6 +1,0 @@
-{
-  "/page": "app/page.js",
-  "/inbox/page": "app/inbox/page.js",
-  "/api/emails/route": "app/api/emails/route.js",
-  "/triage/page": "app/triage/page.js"
-}
