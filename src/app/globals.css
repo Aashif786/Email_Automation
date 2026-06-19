@@ -1,0 +1,237 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --caldim-dark: 11 15 25;
+    --caldim-panel: 21 29 48;
+    --caldim-border: 35 48 78;
+    --caldim-primary: 13 148 136;
+    --caldim-accent: 6 182 212;
+    --caldim-text: 226 232 240;
+    --caldim-text-muted: 148 163 184;
+    --caldim-surface: 26 35 50;
+    --caldim-highlight: 30 41 59;
+    --confidence-high: 16 185 129;
+    --confidence-moderate: 245 158 11;
+    --confidence-low: 239 68 68;
+    --priority-high: 239 68 68;
+    --priority-medium: 249 115 22;
+    --priority-low: 107 114 128;
+    --scrollbar-track: #0B0F19;
+    --scrollbar-thumb: #23304E;
+    --scrollbar-thumb-hover: #334155;
+  }
+
+  .light {
+    --caldim-dark: 248 250 252;
+    --caldim-panel: 255 255 255;
+    --caldim-border: 226 232 240;
+    --caldim-primary: 13 148 136;
+    --caldim-accent: 8 145 178;
+    --caldim-text: 30 41 59;
+    --caldim-text-muted: 100 116 139;
+    --caldim-surface: 248 250 252;
+    --caldim-highlight: 241 245 249;
+    --confidence-high: 5 150 105;
+    --confidence-moderate: 217 119 6;
+    --confidence-low: 220 38 38;
+    --priority-high: 220 38 38;
+    --priority-medium: 234 88 12;
+    --priority-low: 71 85 105;
+    --scrollbar-track: #F1F5F9;
+    --scrollbar-thumb: #CBD5E1;
+    --scrollbar-thumb-hover: #94A3B8;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply min-h-screen bg-caldim-dark font-sans text-caldim-text antialiased;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(13, 148, 136, 0.08), transparent);
+  }
+
+  ::selection {
+    background-color: rgb(var(--caldim-primary) / 0.3);
+    @apply text-white;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-offset-2 ring-offset-caldim-dark;
+    --tw-ring-color: rgb(var(--caldim-accent) / 0.6);
+  }
+}
+
+@layer components {
+  .caldim-panel {
+    @apply rounded-lg border border-caldim-border bg-caldim-panel shadow-panel;
+  }
+
+  .caldim-panel-inset {
+    @apply caldim-panel shadow-inset;
+  }
+
+  .caldim-data-row {
+    @apply grid grid-cols-inbox-dense items-center gap-2 border-b px-3 py-2 text-xxs transition-colors;
+    border-color: rgb(var(--caldim-border) / 0.6);
+  }
+  .caldim-data-row:hover {
+    background-color: rgb(var(--caldim-highlight) / 0.4);
+  }
+
+  .caldim-metric-card {
+    @apply caldim-panel flex flex-col gap-1 p-3;
+  }
+
+  .caldim-section-label {
+    @apply font-mono text-xxs uppercase tracking-widest text-slate-500;
+  }
+
+  .caldim-badge {
+    @apply inline-flex items-center gap-1 rounded border px-1.5 py-0.5 font-mono text-xxs font-medium uppercase tracking-wide;
+  }
+
+  .caldim-badge-priority-high {
+    @apply caldim-badge text-priority-high;
+    background-color: rgb(var(--priority-high) / 0.1);
+    border-color: rgb(var(--priority-high) / 0.4);
+  }
+
+  .caldim-badge-priority-medium {
+    @apply caldim-badge text-priority-medium;
+    background-color: rgb(var(--priority-medium) / 0.1);
+    border-color: rgb(var(--priority-medium) / 0.4);
+  }
+
+  .caldim-badge-priority-low {
+    @apply caldim-badge text-priority-low;
+    background-color: rgb(var(--priority-low) / 0.1);
+    border-color: rgb(var(--priority-low) / 0.4);
+  }
+
+  .caldim-badge-confidence-high {
+    @apply caldim-badge text-confidence-high;
+    background-color: rgb(var(--confidence-high) / 0.1);
+    border-color: rgb(var(--confidence-high) / 0.4);
+  }
+
+  .caldim-badge-confidence-moderate {
+    @apply caldim-badge text-confidence-moderate;
+    background-color: rgb(var(--confidence-moderate) / 0.1);
+    border-color: rgb(var(--confidence-moderate) / 0.4);
+  }
+
+  .caldim-badge-confidence-low {
+    @apply caldim-badge text-confidence-low;
+    background-color: rgb(var(--confidence-low) / 0.1);
+    border-color: rgb(var(--confidence-low) / 0.4);
+  }
+
+  .caldim-btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded border border-caldim-border bg-caldim-surface px-3 py-1.5 font-mono text-xxs uppercase tracking-wide text-slate-300 transition duration-150 hover:border-caldim-primary/50 hover:bg-caldim-highlight hover:text-white active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .caldim-btn-primary {
+    @apply caldim-btn text-caldim-accent hover:bg-caldim-primary hover:text-white;
+    background-color: rgb(var(--caldim-primary) / 0.2);
+    border-color: rgb(var(--caldim-primary) / 0.6);
+  }
+
+  .caldim-btn-danger {
+    @apply caldim-btn text-confidence-low hover:bg-confidence-low hover:text-white;
+    background-color: rgb(var(--confidence-low) / 0.1);
+    border-color: rgb(var(--confidence-low) / 0.4);
+  }
+
+  .caldim-input {
+    @apply w-full rounded border border-caldim-border bg-caldim-dark px-3 py-2 font-mono text-xs text-caldim-text placeholder:text-caldim-text-muted focus:ring-1;
+  }
+  .caldim-input:focus {
+    border-color: rgb(var(--caldim-accent) / 0.6);
+    --tw-ring-color: rgb(var(--caldim-accent) / 0.3);
+  }
+
+  .caldim-nav-link {
+    @apply flex items-center gap-2 rounded px-3 py-2 font-mono text-xxs uppercase tracking-wider text-slate-400 transition hover:bg-caldim-highlight hover:text-slate-200;
+  }
+
+  .caldim-nav-link-active {
+    @apply caldim-nav-link border-l-2 border-caldim-primary bg-caldim-highlight/60 pl-[calc(0.75rem-2px)] text-caldim-accent;
+  }
+
+  .caldim-category-card {
+    @apply caldim-panel cursor-pointer p-3 transition duration-150 hover:shadow-lg;
+  }
+  .caldim-category-card:hover {
+    border-color: rgb(var(--caldim-primary) / 0.4);
+  }
+
+  .caldim-category-card-active {
+    @apply caldim-category-card ring-1;
+    border-color: rgb(var(--caldim-primary) / 0.6);
+    --tw-ring-color: rgb(var(--caldim-primary) / 0.3);
+  }
+
+  .caldim-triage-banner {
+    @apply border px-3 py-2 font-mono text-xxs text-confidence-moderate;
+    background-color: rgb(var(--confidence-moderate) / 0.05);
+    border-color: rgb(var(--confidence-moderate) / 0.3);
+  }
+
+  .caldim-confidence-meter {
+    @apply h-1.5 overflow-hidden rounded-full bg-caldim-border;
+  }
+
+  .caldim-confidence-meter-fill {
+    @apply h-full rounded-full transition-all duration-300;
+  }
+
+  .caldim-table-header {
+    @apply grid grid-cols-inbox-dense gap-2 border-b border-caldim-border bg-caldim-dark/80 px-3 py-2 font-mono text-xxs uppercase tracking-widest text-slate-500;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.2s ease-out;
+  }
+}

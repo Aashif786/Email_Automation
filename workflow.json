@@ -1,0 +1,740 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "fromEmail": "aashifnoormohamed@gmail.com",
+        "toEmail": "aashifanshaf786@gmail.com",
+        "subject": "Unclassified email needs review",
+        "html": "=An email could not be confidently classified.\\n\\nCategory guess: {{ $json.category }}\\nConfidence: {{ $json.confidence }}\\nPriority: {{ $json.priority }}\\n\\nPlease check the Unsorted folder.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        624,
+        2128
+      ],
+      "id": "56030de3-1da8-4946-8cd4-e6f15cfe2c16",
+      "name": "Send an Email6",
+      "webhookId": "0b4ca763-d4b0-4138-b968-308318d91cd9",
+      "credentials": {
+        "smtp": {
+          "id": "NIe75l6KEzSLidZX",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst raw = $json.choices[0].message.content;\n\nconst cleaned = raw\n  .replace(/```json/g, \"\")\n  .replace(/```/g, \"\")\n  .trim();\n\nconst parsed = JSON.parse(cleaned);\n\nreturn [{\n  json: {\n    category: parsed.category,\n    confidence: Number(parsed.confidence),\n    priority: parsed.priority\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        1856
+      ],
+      "id": "1b0add39-cdc1-4734-91c1-8b54c87583ed",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "508a9f5d-6b40-466a-a905-6f91d858b28f",
+              "leftValue": "={{ $json.confidence }}",
+              "rightValue": 0.65,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        256,
+        1936
+      ],
+      "id": "f89b6615-2496-438a-9b58-f69c1fb94675",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "groqApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"temperature\": 0.1,\n  \"max_tokens\": 150,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an intelligent email classification assistant for Caldim Engineering. Analyze the sender, subject, and body of each email and classify it into exactly one category. Categories: project_proposal = RFQs, tenders, quotation requests, engineering proposals, project opportunities, collaboration requests, business proposals. feedback_complaint = complaints, negative feedback, customer issues, escalations, service dissatisfaction, support problems. invoice_payment = invoices, payment confirmations, billing matters, purchase orders, remittance advice, accounts and finance communications. job_application = resumes, CVs, cover letters, internship applications, employment inquiries, candidate submissions. vendor_inquiry = supplier communications, procurement inquiries, vendor introductions, product catalogs, material requests, supplier quotations. general = newsletters, greetings, informational emails, meeting invitations, internal communications, announcements, marketing emails, and anything that does not strongly belong to another category. Assign exactly one priority. Priority rules: high = urgent requests, time-sensitive RFQs, payment issues, executive matters, critical complaints, immediate business action required. medium = standard business communications, vendor discussions, project discussions, customer inquiries, job applications. low = newsletters, promotions, automated notifications, informational messages, announcements. Confidence score must be a decimal between 0 and 1. 0.90 to 1.00 means very confident. 0.70 to 0.89 means moderately confident. 0.50 to 0.69 means uncertain. Below 0.50 should normally be classified as general unless strong evidence suggests another category. Return ONLY valid JSON. Do not return explanations. Do not return markdown. Do not return code fences. Output must contain only  category, confidence, and priority.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"From: {{ $json.from }} | Subject: {{ $json.subject }} | Body: {{ $json.textPlain }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -704,
+        1856
+      ],
+      "id": "7ed7e00e-ae03-4d39-bf7a-b8f25654a589",
+      "name": "HTTP Request1",
+      "credentials": {
+        "groqApi": {
+          "id": "Kp2IP0oMGeos42iR",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "project_proposal",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "693b6344-94cb-44bc-9bc5-d6995882ccd1"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6047c343-48cf-4953-85c1-2b6a5228be04",
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "feedback_complaint",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8bb8e1be-dac9-4cb8-99d6-d23d8fcaf09c",
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "invoice_payment",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c93234a5-0d22-4d8a-b950-6cc8dc21abce",
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "job_application",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "9fa8065e-d0bb-4e3c-bb31-5fb40aad0fb7",
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "vendor_inquiry",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6d3f9a4b-5783-473f-bc64-28a800742ee2",
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "general",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "90654fc3-6a68-4575-93de-989e77198c61",
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "vendor_quote",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6afb455b-4560-4f21-9f13-d8ff2e324fc4",
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "junk",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        1600
+      ],
+      "id": "c3949c69-c320-4e26-b356-eb97ffb0cbff",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/home/node/.n8n-files/{{$json.category}}/{{$json.fileName}}",
+        "dataPropertyName": "={{ $json.binaryKey }}",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        144,
+        1536
+      ],
+      "id": "71d170bd-68b1-4179-bf6e-00afa5fdf48a",
+      "name": "Read/Write Files from Disk3"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -272,
+        1728
+      ],
+      "id": "59c9bea8-0b82-4344-a1c8-8c4265a308d1",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "format": "resolved",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2.1,
+      "position": [
+        -912,
+        1728
+      ],
+      "id": "d17df477-8dbb-4683-9e2c-69733aa622e3",
+      "name": "Email Trigger (IMAP)",
+      "credentials": {
+        "imap": {
+          "id": "VJohkhGbPZWdGjP3",
+          "name": "IMAP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "aashifnoormohamed@gmail.com",
+        "toEmail": "aashifanshaf786@gmail.com, idontknowwhyimbad@gmail.com",
+        "subject": "=[Job Application] {{ $json.subject }}",
+        "html": "=<pre style=\"font-family: Consolas, Monaco, monospace; line-height: 1.5; color: #333; background-color: #f8f9fa; padding: 20px; border: 1px solid #ddd; border-radius: 6px;\">\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCALDIM ENGINEERING — DIGITAL POSTMASTER\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nROUTING DETAILS\n───────────────\nCategory     : {{$json.category}}\nPriority     : {{$json.priority}}\nConfidence   : {{Math.round($json.confidence * 100)}}%\nRouted At    : {{$now}}\n\nSENDER DETAILS\n───────────────\nFrom         : {{$json.from}}\nSubject      : {{$json.subject}}\n\nATTACHMENTS\n───────────────\nTotal Files  : {{Object.keys($binary || {}).length}}\nFilenames    : {{Object.keys($binary || {}).map(key => $binary[key].fileName || key).join(', ') || 'None'}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nORIGINAL MESSAGE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{{$json.textPlain}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAI CLASSIFICATION SUMMARY\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nCategory     : {{$json.category}}\nPriority     : {{$json.priority}}\nConfidence   : {{Math.round($json.confidence * 100)}}%\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSYSTEM INFORMATION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nWorkflow     : Caldim Digital Postmaster\nClassification Engine : Groq Llama 3.3 70B\nStatus       : Successfully Routed\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nThis email was automatically processed and routed by\nCaldim Engineering's Digital Postmaster System.\n\nPlease do not reply to this notification.\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n</pre>",
+        "options": {
+          "ccEmail": "idontknowwhyimbad@gmail.com",
+          "bccEmail": "idontknowwhyimbad@gmail.com"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1024,
+        1632
+      ],
+      "id": "fcf834a7-6a96-4731-a9d4-d600a859a36d",
+      "name": "Send an Email",
+      "webhookId": "0b4ca763-d4b0-4138-b968-308318d91cd9",
+      "credentials": {
+        "smtp": {
+          "id": "NIe75l6KEzSLidZX",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const allItems = $input.all();\n\n// Create an empty base object for our combined data\nconst combinedJson = {};\nlet combinedBinary = {};\n\n// Loop through every incoming item and merge their properties together\nfor (const item of allItems) {\n  if (item.json) {\n    // Extract properties cleanly, handling strings or nested email objects\n    const fromAddress = item.json.from?.value?.[0]?.address || item.json.from || \"\";\n    \n    // Assign values only if they are not empty/falsy\n    if (fromAddress) combinedJson.from = fromAddress;\n    if (item.json.subject) combinedJson.subject = item.json.subject;\n    if (item.json.text || item.json.textPlain) {\n      combinedJson.textPlain = item.json.text || item.json.textPlain;\n    }\n    if (item.json.category) combinedJson.category = item.json.category;\n    if (item.json.confidence) combinedJson.confidence = item.json.confidence;\n    if (item.json.priority) combinedJson.priority = item.json.priority;\n  }\n  \n  // Keep binary data if present in any item\n  if (item.binary) {\n    combinedBinary = { ...combinedBinary, ...item.binary };\n  }\n}\n\n// Fallback values for anything missing\nreturn [{\n  json: {\n    from: combinedJson.from || \"\",\n    subject: combinedJson.subject || \"\",\n    textPlain: combinedJson.textPlain || \"\",\n    category: combinedJson.category || \"\",\n    confidence: combinedJson.confidence || 0,\n    priority: combinedJson.priority || \"\"\n  },\n  binary: combinedBinary\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        1936
+      ],
+      "id": "ea38ae69-28e7-48e7-8b87-15e87ec5e12f",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "fromEmail": "aashifnoormohamed@gmail.com",
+        "toEmail": "aashifanshaf786@gmail.com",
+        "subject": "=[Invoice Payment] {{ $json.subject }}",
+        "html": "=<pre style=\"font-family: Consolas, Monaco, monospace; line-height: 1.5; color: #333; background-color: #f8f9fa; padding: 20px; border: 1px solid #ddd; border-radius: 6px;\">\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCALDIM ENGINEERING — DIGITAL POSTMASTER\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nROUTING DETAILS\n───────────────\nCategory     : {{$json.category}}\nPriority     : {{$json.priority}}\nConfidence   : {{Math.round($json.confidence * 100)}}%\nRouted At    : {{$now}}\n\nSENDER DETAILS\n───────────────\nFrom         : {{$json.from}}\nSubject      : {{$json.subject}}\n\nATTACHMENTS\n───────────────\nTotal Files  : {{Object.keys($binary || {}).length}}\nFilenames    : {{Object.keys($binary || {}).map(key => $binary[key].fileName || key).join(', ') || 'None'}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nORIGINAL MESSAGE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{{$json.textPlain}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAI CLASSIFICATION SUMMARY\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nCategory     : {{$json.category}}\nPriority     : {{$json.priority}}\nConfidence   : {{Math.round($json.confidence * 100)}}%\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSYSTEM INFORMATION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nWorkflow     : Caldim Digital Postmaster\nClassification Engine : Groq Llama 3.3 70B\nStatus       : Successfully Routed\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nThis email was automatically processed and routed by\nCaldim Engineering's Digital Postmaster System.\n\nPlease do not reply to this notification.\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n</pre>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1024,
+        1440
+      ],
+      "id": "94cfffee-9494-4ee0-9d8b-9adb1b7a3e37",
+      "name": "Send an Email1",
+      "webhookId": "0b4ca763-d4b0-4138-b968-308318d91cd9",
+      "credentials": {
+        "smtp": {
+          "id": "NIe75l6KEzSLidZX",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "aashifnoormohamed@gmail.com",
+        "toEmail": "aashifanshaf786@gmail.com",
+        "subject": "=[Project Proposal] {{ $json.subject }}",
+        "html": "=<pre style=\"font-family: Consolas, Monaco, monospace; line-height: 1.5; color: #333; background-color: #f8f9fa; padding: 20px; border: 1px solid #ddd; border-radius: 6px;\">\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCALDIM ENGINEERING — DIGITAL POSTMASTER\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nROUTING DETAILS\n───────────────\nCategory     : {{$json.category}}\nPriority     : {{$json.priority}}\nConfidence   : {{Math.round($json.confidence * 100)}}%\nRouted At    : {{$now}}\n\nSENDER DETAILS\n───────────────\nFrom         : {{$json.from}}\nSubject      : {{$json.subject}}\n\nATTACHMENTS\n───────────────\nTotal Files  : {{Object.keys($binary || {}).length}}\nFilenames    : {{Object.keys($binary || {}).map(key => $binary[key].fileName || key).join(', ') || 'None'}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nORIGINAL MESSAGE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{{$json.textPlain}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAI CLASSIFICATION SUMMARY\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nCategory     : {{$json.category}}\nPriority     : {{$json.priority}}\nConfidence   : {{Math.round($json.confidence * 100)}}%\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSYSTEM INFORMATION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nWorkflow     : Caldim Digital Postmaster\nClassification Engine : Groq Llama 3.3 70B\nStatus       : Successfully Routed\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nThis email was automatically processed and routed by\nCaldim Engineering's Digital Postmaster System.\n\nPlease do not reply to this notification.\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n</pre>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1024,
+        1056
+      ],
+      "id": "ff28757d-8edc-49ed-83ea-afae2f86a20f",
+      "name": "Send an Email2",
+      "webhookId": "0b4ca763-d4b0-4138-b968-308318d91cd9",
+      "credentials": {
+        "smtp": {
+          "id": "NIe75l6KEzSLidZX",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "aashifnoormohamed@gmail.com",
+        "toEmail": "aashifanshaf786@gmail.com",
+        "subject": "=[Feedback Complaint] {{ $json.subject }}",
+        "html": "=<pre style=\"font-family: Consolas, Monaco, monospace; line-height: 1.5; color: #333; background-color: #f8f9fa; padding: 20px; border: 1px solid #ddd; border-radius: 6px;\">\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCALDIM ENGINEERING — DIGITAL POSTMASTER\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nROUTING DETAILS\n───────────────\nCategory     : {{$json.category}}\nPriority     : {{$json.priority}}\nConfidence   : {{Math.round($json.confidence * 100)}}%\nRouted At    : {{$now}}\n\nSENDER DETAILS\n───────────────\nFrom         : {{$json.from}}\nSubject      : {{$json.subject}}\n\nATTACHMENTS\n───────────────\nTotal Files  : {{Object.keys($binary || {}).length}}\nFilenames    : {{Object.keys($binary || {}).map(key => $binary[key].fileName || key).join(', ') || 'None'}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nORIGINAL MESSAGE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{{$json.textPlain}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAI CLASSIFICATION SUMMARY\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nCategory     : {{$json.category}}\nPriority     : {{$json.priority}}\nConfidence   : {{Math.round($json.confidence * 100)}}%\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSYSTEM INFORMATION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nWorkflow     : Caldim Digital Postmaster\nClassification Engine : Groq Llama 3.3 70B\nStatus       : Successfully Routed\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nThis email was automatically processed and routed by\nCaldim Engineering's Digital Postmaster System.\n\nPlease do not reply to this notification.\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n</pre>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1024,
+        1248
+      ],
+      "id": "3cdf3def-ed54-4a38-9869-f8e91d9439f5",
+      "name": "Send an Email3",
+      "webhookId": "0b4ca763-d4b0-4138-b968-308318d91cd9",
+      "credentials": {
+        "smtp": {
+          "id": "NIe75l6KEzSLidZX",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "aashifnoormohamed@gmail.com",
+        "toEmail": "aashifanshaf786@gmail.com",
+        "subject": "=[Vendor Inquiry] {{ $json.subject }}",
+        "html": "=<pre style=\"font-family: Consolas, Monaco, monospace; line-height: 1.5; color: #333; background-color: #f8f9fa; padding: 20px; border: 1px solid #ddd; border-radius: 6px;\">\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCALDIM ENGINEERING — DIGITAL POSTMASTER\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nROUTING DETAILS\n───────────────\nCategory     : {{$json.category}}\nPriority     : {{$json.priority}}\nConfidence   : {{Math.round($json.confidence * 100)}}%\nRouted At    : {{$now}}\n\nSENDER DETAILS\n───────────────\nFrom         : {{$json.from}}\nSubject      : {{$json.subject}}\n\nATTACHMENTS\n───────────────\nTotal Files  : {{Object.keys($binary || {}).length}}\nFilenames    : {{Object.keys($binary || {}).map(key => $binary[key].fileName || key).join(', ') || 'None'}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nORIGINAL MESSAGE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{{$json.textPlain}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAI CLASSIFICATION SUMMARY\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nCategory     : {{$json.category}}\nPriority     : {{$json.priority}}\nConfidence   : {{Math.round($json.confidence * 100)}}%\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSYSTEM INFORMATION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nWorkflow     : Caldim Digital Postmaster\nClassification Engine : Groq Llama 3.3 70B\nStatus       : Successfully Routed\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nThis email was automatically processed and routed by\nCaldim Engineering's Digital Postmaster System.\n\nPlease do not reply to this notification.\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n</pre>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1024,
+        1824
+      ],
+      "id": "97d6d827-8b55-402f-a1df-f98fd6036b52",
+      "name": "Send an Email4",
+      "webhookId": "0b4ca763-d4b0-4138-b968-308318d91cd9",
+      "credentials": {
+        "smtp": {
+          "id": "NIe75l6KEzSLidZX",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "aashifnoormohamed@gmail.com",
+        "toEmail": "aashifanshaf786@gmail.com",
+        "subject": "=[junk] {{ $json.subject }}",
+        "html": "=<pre style=\"font-family: Consolas, Monaco, monospace; line-height: 1.5; color: #333; background-color: #f8f9fa; padding: 20px; border: 1px solid #ddd; border-radius: 6px;\">\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCALDIM ENGINEERING — DIGITAL POSTMASTER\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nROUTING DETAILS\n───────────────\nCategory     : {{$json.category}}\nPriority     : {{$json.priority}}\nConfidence   : {{Math.round($json.confidence * 100)}}%\nRouted At    : {{$now}}\n\nSENDER DETAILS\n───────────────\nFrom         : {{$json.from}}\nSubject      : {{$json.subject}}\n\nATTACHMENTS\n───────────────\nTotal Files  : {{Object.keys($binary || {}).length}}\nFilenames    : {{Object.keys($binary || {}).map(key => $binary[key].fileName || key).join(', ') || 'None'}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nORIGINAL MESSAGE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{{$json.textPlain}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAI CLASSIFICATION SUMMARY\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nCategory     : {{$json.category}}\nPriority     : {{$json.priority}}\nConfidence   : {{Math.round($json.confidence * 100)}}%\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSYSTEM INFORMATION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nWorkflow     : Caldim Digital Postmaster\nClassification Engine : Groq Llama 3.3 70B\nStatus       : Successfully Routed\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nThis email was automatically processed and routed by\nCaldim Engineering's Digital Postmaster System.\n\nPlease do not reply to this notification.\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n</pre>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1024,
+        2400
+      ],
+      "id": "175e9b62-819c-49e4-98ba-32d8d6606330",
+      "name": "Send an Email5",
+      "webhookId": "0b4ca763-d4b0-4138-b968-308318d91cd9",
+      "credentials": {
+        "smtp": {
+          "id": "NIe75l6KEzSLidZX",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "aashifnoormohamed@gmail.com",
+        "toEmail": "aashifanshaf786@gmail.com",
+        "subject": "=[General] {{ $json.subject }}",
+        "html": "=<pre style=\"font-family: Consolas, Monaco, monospace; line-height: 1.5; color: #333; background-color: #f8f9fa; padding: 20px; border: 1px solid #ddd; border-radius: 6px;\">\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCALDIM ENGINEERING — DIGITAL POSTMASTER\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nROUTING DETAILS\n───────────────\nCategory     : {{$json.category}}\nPriority     : {{$json.priority}}\nConfidence   : {{Math.round($json.confidence * 100)}}%\nRouted At    : {{$now}}\n\nSENDER DETAILS\n───────────────\nFrom         : {{$json.from}}\nSubject      : {{$json.subject}}\n\nATTACHMENTS\n───────────────\nTotal Files  : {{Object.keys($binary || {}).length}}\nFilenames    : {{Object.keys($binary || {}).map(key => $binary[key].fileName || key).join(', ') || 'None'}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nORIGINAL MESSAGE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{{$json.textPlain}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAI CLASSIFICATION SUMMARY\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nCategory     : {{$json.category}}\nPriority     : {{$json.priority}}\nConfidence   : {{Math.round($json.confidence * 100)}}%\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSYSTEM INFORMATION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nWorkflow     : Caldim Digital Postmaster\nClassification Engine : Groq Llama 3.3 70B\nStatus       : Successfully Routed\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nThis email was automatically processed and routed by\nCaldim Engineering's Digital Postmaster System.\n\nPlease do not reply to this notification.\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n</pre>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1024,
+        2016
+      ],
+      "id": "d5aafbb5-5565-4948-8409-cee10f26f2b7",
+      "name": "Send an Email7",
+      "webhookId": "0b4ca763-d4b0-4138-b968-308318d91cd9",
+      "credentials": {
+        "smtp": {
+          "id": "NIe75l6KEzSLidZX",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "aashifnoormohamed@gmail.com",
+        "toEmail": "aashifanshaf786@gmail.com",
+        "subject": "=[Vendor Quote] {{ $json.subject }}",
+        "html": "=<pre style=\"font-family: Consolas, Monaco, monospace; line-height: 1.5; color: #333; background-color: #f8f9fa; padding: 20px; border: 1px solid #ddd; border-radius: 6px;\">\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCALDIM ENGINEERING — DIGITAL POSTMASTER\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nROUTING DETAILS\n───────────────\nCategory     : {{$json.category}}\nPriority     : {{$json.priority}}\nConfidence   : {{Math.round($json.confidence * 100)}}%\nRouted At    : {{$now}}\n\nSENDER DETAILS\n───────────────\nFrom         : {{$json.from}}\nSubject      : {{$json.subject}}\n\nATTACHMENTS\n───────────────\nTotal Files  : {{Object.keys($binary || {}).length}}\nFilenames    : {{Object.keys($binary || {}).map(key => $binary[key].fileName || key).join(', ') || 'None'}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nORIGINAL MESSAGE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{{$json.textPlain}}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAI CLASSIFICATION SUMMARY\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nCategory     : {{$json.category}}\nPriority     : {{$json.priority}}\nConfidence   : {{Math.round($json.confidence * 100)}}%\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSYSTEM INFORMATION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nWorkflow     : Caldim Digital Postmaster\nClassification Engine : Groq Llama 3.3 70B\nStatus       : Successfully Routed\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nThis email was automatically processed and routed by\nCaldim Engineering's Digital Postmaster System.\n\nPlease do not reply to this notification.\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n</pre>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1024,
+        2208
+      ],
+      "id": "3ba802ef-2745-4674-87b5-5ad8fcd923c6",
+      "name": "Send an Email8",
+      "webhookId": "0b4ca763-d4b0-4138-b968-308318d91cd9",
+      "credentials": {
+        "smtp": {
+          "id": "NIe75l6KEzSLidZX",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "aashifnoormohamed@gmail.com",
+        "toEmail": "aashifanshaf786@gmail.com, idontknowwhyimbad@gmail.com",
+        "subject": "=testing",
+        "html": "=━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCALDIM ENGINEERING — DIGITAL POSTMASTER\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\ntest mail  ",
+        "options": {
+          "ccEmail": "idontknowwhyimbad@gmail.com",
+          "bccEmail": "idontknowwhyimbad@gmail.com"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1376,
+        1760
+      ],
+      "id": "cc937881-fb10-4022-a52b-af49cfb9e141",
+      "name": "Send an Email9",
+      "webhookId": "0b4ca763-d4b0-4138-b968-308318d91cd9",
+      "notesInFlow": true,
+      "credentials": {
+        "smtp": {
+          "id": "NIe75l6KEzSLidZX",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send an Email6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Send an Email2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send an Email3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send an Email1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send an Email4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send an Email7",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send an Email8",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send an Email5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read/Write Files from Disk3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Trigger (IMAP)": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "ecbe395fa0800f4655b62cad4882df527a0ec3257c8fed3ba0a684e9fcd75f64"
+  }
+}
