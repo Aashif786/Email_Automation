@@ -11,8 +11,8 @@
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        624,
-        2128
+        608,
+        2160
       ],
       "id": "56030de3-1da8-4946-8cd4-e6f15cfe2c16",
       "name": "Send an Email6",
@@ -31,8 +31,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -496,
-        1856
+        -528,
+        1728
       ],
       "id": "1b0add39-cdc1-4734-91c1-8b54c87583ed",
       "name": "Code in JavaScript2"
@@ -65,8 +65,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        256,
-        1936
+        384,
+        2016
       ],
       "id": "f89b6615-2496-438a-9b58-f69c1fb94675",
       "name": "If1"
@@ -85,8 +85,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -704,
-        1856
+        -720,
+        1728
       ],
       "id": "7ed7e00e-ae03-4d39-bf7a-b8f25654a589",
       "name": "HTTP Request1",
@@ -292,8 +292,8 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        624,
-        1600
+        608,
+        1632
       ],
       "id": "c3949c69-c320-4e26-b356-eb97ffb0cbff",
       "name": "Switch1"
@@ -310,8 +310,8 @@
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
       "position": [
-        144,
-        1536
+        -64,
+        1472
       ],
       "id": "71d170bd-68b1-4179-bf6e-00afa5fdf48a",
       "name": "Read/Write Files from Disk3"
@@ -325,7 +325,7 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -272,
+        -304,
         1728
       ],
       "id": "59c9bea8-0b82-4344-a1c8-8c4265a308d1",
@@ -339,7 +339,7 @@
       "type": "n8n-nodes-base.emailReadImap",
       "typeVersion": 2.1,
       "position": [
-        -912,
+        -960,
         1728
       ],
       "id": "d17df477-8dbb-4683-9e2c-69733aa622e3",
@@ -366,7 +366,7 @@
       "typeVersion": 2.1,
       "position": [
         1024,
-        1632
+        1648
       ],
       "id": "fcf834a7-6a96-4731-a9d4-d600a859a36d",
       "name": "Send an Email",
@@ -385,8 +385,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        32,
-        1936
+        -64,
+        2016
       ],
       "id": "ea38ae69-28e7-48e7-8b87-15e87ec5e12f",
       "name": "Code in JavaScript"
@@ -403,7 +403,7 @@
       "typeVersion": 2.1,
       "position": [
         1024,
-        1440
+        1456
       ],
       "id": "94cfffee-9494-4ee0-9d8b-9adb1b7a3e37",
       "name": "Send an Email1",
@@ -427,7 +427,7 @@
       "typeVersion": 2.1,
       "position": [
         1024,
-        1056
+        1072
       ],
       "id": "ff28757d-8edc-49ed-83ea-afae2f86a20f",
       "name": "Send an Email2",
@@ -451,7 +451,7 @@
       "typeVersion": 2.1,
       "position": [
         1024,
-        1248
+        1264
       ],
       "id": "3cdf3def-ed54-4a38-9869-f8e91d9439f5",
       "name": "Send an Email3",
@@ -475,7 +475,7 @@
       "typeVersion": 2.1,
       "position": [
         1024,
-        1824
+        1840
       ],
       "id": "97d6d827-8b55-402f-a1df-f98fd6036b52",
       "name": "Send an Email4",
@@ -499,7 +499,7 @@
       "typeVersion": 2.1,
       "position": [
         1024,
-        2400
+        2416
       ],
       "id": "175e9b62-819c-49e4-98ba-32d8d6606330",
       "name": "Send an Email5",
@@ -523,7 +523,7 @@
       "typeVersion": 2.1,
       "position": [
         1024,
-        2016
+        2032
       ],
       "id": "d5aafbb5-5565-4948-8409-cee10f26f2b7",
       "name": "Send an Email7",
@@ -547,7 +547,7 @@
       "typeVersion": 2.1,
       "position": [
         1024,
-        2208
+        2224
       ],
       "id": "3ba802ef-2745-4674-87b5-5ad8fcd923c6",
       "name": "Send an Email8",
@@ -561,31 +561,21 @@
     },
     {
       "parameters": {
-        "fromEmail": "aashifnoormohamed@gmail.com",
-        "toEmail": "aashifanshaf786@gmail.com, idontknowwhyimbad@gmail.com",
-        "subject": "=testing",
-        "html": "=━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCALDIM ENGINEERING — DIGITAL POSTMASTER\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\ntest mail  ",
-        "options": {
-          "ccEmail": "idontknowwhyimbad@gmail.com",
-          "bccEmail": "idontknowwhyimbad@gmail.com"
-        }
+        "method": "POST",
+        "url": "http://localhost:3000/api/emails",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  from: $json.from,\n  subject: $json.subject,\n  textPlain: $json.textPlain,\n  category: $json.category,\n  confidence: $json.confidence,\n  priority: $json.priority\n} }}",
+        "options": {}
       },
-      "type": "n8n-nodes-base.emailSend",
-      "typeVersion": 2.1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
       "position": [
-        1376,
-        1760
+        160,
+        2016
       ],
-      "id": "cc937881-fb10-4022-a52b-af49cfb9e141",
-      "name": "Send an Email9",
-      "webhookId": "0b4ca763-d4b0-4138-b968-308318d91cd9",
-      "notesInFlow": true,
-      "credentials": {
-        "smtp": {
-          "id": "NIe75l6KEzSLidZX",
-          "name": "SMTP account"
-        }
-      }
+      "id": "a8048186-0bf9-4dcb-a354-c69bea461a97",
+      "name": "HTTP Request 2"
     }
   ],
   "connections": {
@@ -722,6 +712,17 @@
       ]
     },
     "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request 2": {
       "main": [
         [
           {

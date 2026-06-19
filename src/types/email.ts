@@ -1,4 +1,5 @@
 export const CONFIDENCE_THRESHOLD = 0.65 as const;
+export const NEEDS_REVIEW_THRESHOLD = 0.50 as const;
 
 export const EMAIL_CATEGORIES = [
   'project_proposal',
@@ -6,16 +7,18 @@ export const EMAIL_CATEGORIES = [
   'invoice_payment',
   'job_application',
   'vendor_inquiry',
-  'general',
   'vendor_quote',
+  'general',
   'junk',
+  'support_request',
+  'needs_review',
 ] as const;
 
 export type EmailCategory = (typeof EMAIL_CATEGORIES)[number];
 
 export type EmailPriority = 'high' | 'medium' | 'low';
 
-export type EmailStatus = 'classified' | 'unclassified';
+export type EmailStatus = 'classified' | 'unclassified' | 'manually_reclassified';
 
 export interface EmailAttachment {
   fileName: string;
@@ -25,6 +28,7 @@ export interface EmailAttachment {
 
 export interface EmailItem {
   id: string;
+  messageId?: string;
   from: string;
   subject: string;
   textPlain: string;
@@ -34,6 +38,13 @@ export interface EmailItem {
   processedAt: string;
   status: EmailStatus;
   attachments: EmailAttachment[];
+  // AI reasoning (from classification)
+  reasoning?: string;
+  evidence?: string[];
+  // Audit trail (from manual reclassification)
+  originalCategory?: string;
+  reclassifiedAt?: string;
+  reclassifiedBy?: string;
 }
 
 export type CategoryCountMap = Record<EmailCategory, number>;
@@ -46,7 +57,7 @@ export interface EmailQueueCounts {
 }
 
 export function isClassifiedEmail(email: EmailItem): boolean {
-  if (email.status === 'classified') {
+  if (email.status === 'classified' || email.status === 'manually_reclassified') {
     return true;
   }
   if (email.status === 'unclassified') {
@@ -60,7 +71,7 @@ export function isManualReviewEmail(email: EmailItem): boolean {
 }
 
 export function isAutoRoutedEmail(email: EmailItem): boolean {
-  return email.status === 'classified' || email.confidence >= CONFIDENCE_THRESHOLD;
+  return email.status === 'classified' || email.status === 'manually_reclassified' || email.confidence >= CONFIDENCE_THRESHOLD;
 }
 
 export function getConfidenceBracket(
@@ -81,3 +92,17 @@ export function createEmptyCategoryCounts(): CategoryCountMap {
     return accumulator;
   }, {} as CategoryCountMap);
 }
+
+/** Human-readable labels for each category */
+export const CATEGORY_LABELS: Record<EmailCategory, string> = {
+  project_proposal: 'Project Proposal',
+  feedback_complaint: 'Feedback / Complaint',
+  invoice_payment: 'Invoice / Payment',
+  job_application: 'Job Application',
+  vendor_inquiry: 'Vendor Inquiry',
+  vendor_quote: 'Vendor Quote',
+  general: 'General',
+  junk: 'Junk / Spam',
+  support_request: 'Support Request',
+  needs_review: 'Needs Review',
+};

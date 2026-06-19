@@ -4,7 +4,7 @@
   "private": true,
   "description": "Caldim Digital Postmaster — AI-driven email classification dashboard",
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently \"next dev\" \"tsx watch src/worker/index.ts\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -12,12 +12,22 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.8",
+    "@types/mailparser": "^3.4.6",
+    "@types/nodemailer": "^8.0.1",
     "axios": "^1.7.9",
     "better-sqlite3": "^12.10.0",
+    "concurrently": "^10.0.3",
+    "dotenv": "^17.4.2",
+    "groq-sdk": "^1.2.1",
+    "imapflow": "^1.4.1",
     "lucide-react": "^0.468.0",
+    "mailparser": "^3.9.10",
     "next": "^14.2.21",
+    "nodemailer": "^9.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "recharts": "^3.8.1",
+    "tsx": "^4.22.4",
     "zustand": "^5.0.2"
   },
   "devDependencies": {

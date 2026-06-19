@@ -22,6 +22,7 @@ export const AttachmentList: React.FC<AttachmentListProps> = ({ attachments, ema
   };
 
   const getFileIcon = (fileName: string) => {
+    if (!fileName) return '📎';
     const ext = fileName.split('.').pop()?.toLowerCase();
     if (ext === 'pdf') return '📄';
     if (['png', 'jpg', 'jpeg', 'gif'].includes(ext || '')) return '🖼️';
@@ -33,23 +34,27 @@ export const AttachmentList: React.FC<AttachmentListProps> = ({ attachments, ema
     <div className="mt-4">
       <h4 className="text-xs font-semibold text-caldim-accent mb-2 uppercase tracking-wider">Attachments ({attachments.length})</h4>
       <div className="flex flex-col gap-2">
-        {attachments.map((att, idx) => (
-          <div key={idx} className="flex items-center justify-between bg-caldim-dark border border-caldim-border px-4 py-2 rounded">
-            <div className="flex items-center gap-3">
-              <span className="text-xl">{getFileIcon(att.fileName)}</span>
-              <div>
-                <p className="text-sm font-medium text-slate-200">{att.fileName}</p>
-                <p className="text-xxs text-slate-500 uppercase">{att.contentType || 'Unknown Type'}</p>
+        {attachments.map((att, idx) => {
+          // Robustly support both camelCase and lowercase key variants from different parsing stages
+          const name = att.fileName || (att as any).filename || 'unnamed_attachment';
+          return (
+            <div key={idx} className="flex items-center justify-between bg-caldim-dark border border-caldim-border px-4 py-2 rounded">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">{getFileIcon(name)}</span>
+                <div>
+                  <p className="text-sm font-medium text-slate-200">{name}</p>
+                  <p className="text-xxs text-slate-500 uppercase">{att.contentType || 'Unknown Type'}</p>
+                </div>
               </div>
+              <button 
+                onClick={() => handleDownload(name)}
+                className="px-3 py-1 bg-caldim-primary/10 hover:bg-caldim-primary/20 text-caldim-accent border border-caldim-primary/30 rounded text-xs transition-colors"
+              >
+                Download
+              </button>
             </div>
-            <button 
-              onClick={() => handleDownload(att.fileName)}
-              className="px-3 py-1 bg-caldim-primary/10 hover:bg-caldim-primary/20 text-caldim-accent border border-caldim-primary/30 rounded text-xs transition-colors"
-            >
-              Download
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

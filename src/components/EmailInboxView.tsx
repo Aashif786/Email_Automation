@@ -3,18 +3,37 @@ import { useRouter } from 'next/navigation';
 import { useEmails } from '@/hooks/useEmailClassification';
 import { useEmailStore } from '@/store/useEmailStore';
 import { EMAIL_CATEGORIES } from '@/types/email';
+import { exportEmailsToCSV } from '@/utils/csvExport';
 
 export const EmailInboxView: React.FC = () => {
   const router = useRouter();
   const { data: emails = [], isLoading } = useEmails();
   const getAutomatedEmails = useEmailStore((state) => state.getAutomatedEmails);
+  const searchQuery = useEmailStore((state) => state.searchQuery);
   
   const [activeCategory, setActiveCategory] = useState<string>('all');
   
-  const automatedEmails = getAutomatedEmails(emails);
-  const filteredEmails = activeCategory === 'all' 
+  // Filter out junk emails from Inbox Streams
+  const automatedEmails = getAutomatedEmails(emails).filter(e => e.category !== 'junk');
+  
+  // Filter by category
+  const categoryFiltered = activeCategory === 'all' 
     ? automatedEmails 
     : automatedEmails.filter(e => e.category === activeCategory);
+
+  // Filter by search query
+  const filteredEmails = categoryFiltered.filter(email => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    if (!normalizedQuery) return true;
+    const haystack = [
+      email.from,
+      email.subject,
+      email.textPlain,
+      email.category,
+      email.priority
+    ].join(' ').toLowerCase();
+    return haystack.includes(normalizedQuery);
+  });
 
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
@@ -41,11 +60,24 @@ export const EmailInboxView: React.FC = () => {
     );
   }
 
+  // Filter category list to exclude junk for the filter tabs
+  const displayCategories = EMAIL_CATEGORIES.filter(cat => cat !== 'junk');
+
   return (
     <div className="flex flex-col h-full bg-caldim-dark">
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-slate-100 mb-1">Classified Inbox</h2>
-        <p className="text-sm text-slate-400">Viewing auto-routed items processed by the n8n engine.</p>
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-slate-100 mb-1">Classified Inbox</h2>
+          <p className="text-sm text-slate-400">Viewing auto-routed items processed by the AI classification engine.</p>
+        </div>
+        <button
+          onClick={() => exportEmailsToCSV(filteredEmails, 'classified_inbox.csv')}
+          disabled={filteredEmails.length === 0}
+          className="flex items-center gap-2 px-3 py-1.5 rounded border border-caldim-border bg-caldim-panel hover:border-caldim-primary/40 hover:text-caldim-accent transition-all text-caldim-text-muted font-mono text-xxs tracking-widest uppercase shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          Export CSV
+        </button>
       </div>
 
       {/* Filters */}
@@ -56,7 +88,7 @@ export const EmailInboxView: React.FC = () => {
         >
           All Streams
         </button>
-        {EMAIL_CATEGORIES.map(cat => (
+        {displayCategories.map(cat => (
           <button 
             key={cat}
             onClick={() => setActiveCategory(cat)}

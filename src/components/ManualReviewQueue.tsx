@@ -6,31 +6,58 @@ import { EMAIL_CATEGORIES, EmailCategory, EmailItem, EmailPriority } from '@/typ
 export const ManualReviewQueue: React.FC = () => {
   const { data: emails = [], isLoading, isError } = useEmails();
   const getManualReviewQueue = useEmailStore((state) => state.getManualReviewQueue);
+  const searchQuery = useEmailStore((state) => state.searchQuery);
   const reviewQueue = getManualReviewQueue(emails);
 
+  const filteredQueue = reviewQueue.filter(email => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    if (!normalizedQuery) return true;
+    const haystack = [
+      email.from,
+      email.subject,
+      email.textPlain,
+      email.category,
+      email.priority
+    ].join(' ').toLowerCase();
+    return haystack.includes(normalizedQuery);
+  });
+
   if (isLoading) {
-    return <div className="p-8 text-slate-400">Loading review queue...</div>;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="p-8 text-slate-400 animate-pulse font-mono tracking-widest text-sm">
+          SYNCHRONIZING QUEUE...
+        </div>
+      </div>
+    );
   }
 
   if (isError) {
-    return <div className="p-8 text-red-400">Error loading data stream.</div>;
-  }
-
-  if (reviewQueue.length === 0) {
-    return <div className="p-8 text-emerald-400">No emails pending manual review.</div>;
+    return (
+      <div className="p-8 text-red-500 font-mono text-sm border border-red-500/20 bg-red-500/5 rounded">
+        ERROR ENCOUNTERED SYNCHRONIZING WITH DATABASE.
+      </div>
+    );
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 bg-caldim-dark h-full">
       <div className="border-b border-caldim-border pb-4">
-        <h2 className="text-xl font-bold text-slate-100">Manual Review Queue</h2>
-        <p className="text-sm text-slate-400">{reviewQueue.length} items flagged for human verification.</p>
+        <h2 className="text-xl font-bold text-slate-100 mb-1">Manual Review Queue</h2>
+        <p className="text-sm text-slate-400">{filteredQueue.length} items flagged for human verification.</p>
       </div>
-      <div className="flex flex-col gap-4">
-        {reviewQueue.map((email) => (
-          <ManualReviewCard key={email.id} email={email} />
-        ))}
-      </div>
+      
+      {filteredQueue.length === 0 ? (
+        <div className="p-12 text-center border border-caldim-border bg-caldim-panel rounded-lg text-slate-500 font-mono text-sm">
+          {searchQuery ? "NO PENDING EMAILS MATCH YOUR SEARCH QUERY" : "QUEUE IS EMPTY • NO REVIEW REQUIRED"}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4 overflow-auto pb-8">
+          {filteredQueue.map((email) => (
+            <ManualReviewCard key={email.id} email={email} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -71,12 +98,15 @@ const ManualReviewCard: React.FC<{ email: EmailItem }> = ({ email }) => {
           <div className="mt-4">
             <h4 className="text-xs font-semibold text-caldim-accent mb-2 uppercase tracking-wider">Attachments</h4>
             <div className="flex flex-wrap gap-2">
-              {email.attachments.map((att, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-slate-800 border border-slate-700 px-3 py-1.5 rounded text-sm text-slate-200">
-                  <svg className="w-4 h-4 text-caldim-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
-                  <span className="truncate max-w-[200px]">{att.fileName}</span>
-                </div>
-              ))}
+              {email.attachments.map((att, idx) => {
+                const name = att.fileName || (att as any).filename || 'unnamed_attachment';
+                return (
+                  <div key={idx} className="flex items-center gap-2 bg-slate-800 border border-slate-700 px-3 py-1.5 rounded text-sm text-slate-200">
+                    <svg className="w-4 h-4 text-caldim-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                    <span className="truncate max-w-[200px]">{name}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

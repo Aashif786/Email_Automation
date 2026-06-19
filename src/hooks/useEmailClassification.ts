@@ -17,6 +17,7 @@ export const useEmails = () => {
       return data;
     },
     refetchInterval: 5000,
+    refetchIntervalInBackground: false,
   });
 
   useEffect(() => {
