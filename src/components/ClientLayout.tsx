@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEmailStore } from '@/store/useEmailStore';
@@ -41,11 +41,10 @@ const Sidebar = () => {
       <div className="p-6 border-b border-caldim-border bg-caldim-dark/30">
         <h1 className="text-xl font-black text-slate-100 tracking-wider flex items-center gap-2">
           <div className="w-4 h-4 bg-caldim-primary shadow-[0_0_8px_rgba(13,148,136,0.8)]">
-            
           CALDIM<span className="text-caldim-primary font-light">POSTMASTER</span>
           </div>
         </h1>
-        <p className="text-xs text-slate-500 mt-2 uppercase tracking-widest font-mono">Digital Classification Engine</p>
+        <p className="text-xs text-slate-500 mt-2 uppercase tracking-widest font-mono">Intelligent Email Classification Engine</p>
       </div>
       <nav className="flex-1 py-6 flex flex-col gap-2">
         <Link href="/" className={`px-6 py-3 text-sm font-semibold transition-colors uppercase tracking-wider flex items-center gap-3 ${isActive('/')}`}>
@@ -81,6 +80,27 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   const theme = useEmailStore((state) => state.theme);
   const searchQuery = useEmailStore((state) => state.searchQuery);
   const setSearchQuery = useEmailStore((state) => state.setSearchQuery);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '/') {
+        // Do not intercept if the user is already typing in an input/textarea
+        if (
+          document.activeElement?.tagName === 'INPUT' ||
+          document.activeElement?.tagName === 'TEXTAREA' ||
+          (document.activeElement as HTMLElement)?.isContentEditable
+        ) {
+          return;
+        }
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     if (theme === 'light') {
@@ -113,10 +133,11 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
                 <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
               </span>
               <input
+                ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="SEARCH EMAILS (SENDER, SUBJECT, BODY, CATEGORY...)"
+                placeholder="SEARCH EMAILS (PRESS '/' TO FOCUS)"
                 className="w-full pl-10 pr-10 py-1.5 bg-caldim-dark/50 border border-caldim-border rounded text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-caldim-primary/60 focus:ring-1 focus:ring-caldim-primary/20 transition-all uppercase tracking-wider"
               />
               {searchQuery && (
